@@ -23,8 +23,8 @@ const config = {
   compiler: {
     type: 'webpack5',
     prebundle: {
-			enable: false
-		}
+      enable: false
+    }
   },
   cache: {
     enable: false // Webpack 持久化缓存配置，建议开启。默认配置请参考：https://docs.taro.zone/docs/config-detail#cache
@@ -53,9 +53,36 @@ const config = {
     }
   },
   h5: {
-    publicPath: '/',
+    publicPath: '/h5',
     staticDirectory: 'static',
     // esnextModules: ['nutui-react'],
+    webpackChain(chain, Webpack) {
+      const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+      chain.merge({
+        module: {
+          rules: [
+            {
+              test: /\.css$/,
+              use: [
+                {
+                  loader: MiniCssExtractPlugin.loader,
+                  options: {
+                    publicPath: () => {
+                      return '//mallstatic-s-cdn2.xxx.cn/mall/h5/'
+                    },
+                  },
+                },
+                'css-loader',
+              ],
+            },
+          ],
+        },
+      })
+    },
+    router: {
+      mode: 'browser', // 使用history模式
+      basename: '/h5', // 添加basesname为/h5后 使用taro路由跳转后的路径为 /h5/url 但在地址栏输入 url 和 /h5/url 都可以访问到对应的页面
+    },
     postcss: {
       pxtransform: {
         enable: true,
@@ -75,6 +102,17 @@ const config = {
           generateScopedName: '[name]__[local]___[hash:base64:5]'
         }
       }
+    },
+    output: {
+      filename: `js/[name].[hash:8].js`,
+      chunkFilename: `js/[name].[chunkhash:8].js`,
+      publicPath: () => {
+        return `//mallstatic-s-cdn2.xxx.cn/mall/h5/`
+      },
+    },
+    miniCssExtractPluginOption: {
+      filename: `css/[name].[hash:8].css`,
+		  chunkFilename: `css/[id].[chunkhash:8].css`,
     }
   }
 }
